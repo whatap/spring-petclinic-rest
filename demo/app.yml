@@ -1,0 +1,12 @@
+services:
+  petclinic-app:
+    image: spring-petclinic-rest:latest
+    ports:
+      - "9966:9966"
+  petclinic-client:
+    image: spring-petclinic-rest-client:latest
+    environment:
+      PETCLINIC_URL: http://petclinic-app:9966
+      NUM_WORKERS: 2
+    depends_on:
+      - petclinic-app

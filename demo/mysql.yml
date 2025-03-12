@@ -1,0 +1,28 @@
+services:
+  petclinic-mysql:
+    image: mysql:8.0
+    hostname: petclinic-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=petclinic
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=petclinic
+      - MYSQL_PASSWORD=petclinic
+      - MYSQL_DATABASE=petclinic
+  whatap_db_agent:
+    image: whatap/db-agent:latest
+    container_name: "whatap_db_agent"
+    restart: "no"
+    environment:
+      WHATAP_CONF: |
+        license=x2m8gbge5032d-x1kt9iokh3pvpg-x6uevo4npkh1i3
+        whatap.server.host=13.124.188.156
+        dbms=mysql
+        db_ip=petclinic-mysql
+        db_port=3306
+        connect_option=?useSSL=false&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: petclinic
+    depends_on:
+      - petclinic-mysql
