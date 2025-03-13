@@ -16,8 +16,7 @@ services:
     environment:
       WHATAP_CONF: |
         license=x2m8gbge5032d-x1kt9iokh3pvpg-x6uevo4npkh1i3
-        whatap.server.host=13.124.188.156
-        dbms=mysql
+        whatap.server.host=13.124.188.156 dbms=mysql
         db_ip=petclinic-mysql
         db_port=3306
         connect_option=?useSSL=false&allowPublicKeyRetrieval=true
@@ -48,12 +47,3 @@ services:
     depends_on:
       - petclinic-mysql
     restart: on-failure
-  petclinic-client:
-    image: spring-petclinic-rest-client:latest
-    environment:
-      PETCLINIC_URL: http://petclinic-app:9966
-      NUM_WORKERS: 20
-    restart: on-failure
-    depends_on:
-      - petclinic-mysql
-      - petclinic-app
