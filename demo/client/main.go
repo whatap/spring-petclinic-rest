@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,6 +23,14 @@ type Owner struct {
 	City      string `json:"city"`
 	Telephone string `json:"telephone"`
 	ID        int    `json:"id"`
+}
+
+type OwnerInput struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Address   string `json:"address"`
+	City      string `json:"city"`
+	Telephone string `json:"telephone"`
 }
 
 type HTTPClient struct {
@@ -62,7 +71,7 @@ func (hc *HTTPClient) HealthCheck() bool {
 }
 
 func (hc *HTTPClient) GetOwners() []Owner {
-	url := fmt.Sprintf("%s/api/owners", hc.BaseURL)
+	url := fmt.Sprintf("%s/petclinic/api/owners", hc.BaseURL)
 
 	for {
 		resp, err := hc.Client.Get(url)
@@ -90,30 +99,47 @@ func (hc *HTTPClient) GetOwners() []Owner {
 }
 
 func (hc *HTTPClient) UpdateOwner(owner Owner) {
-	url := fmt.Sprintf("%s/api/owners/%d", hc.BaseURL, owner.ID)
-	body, err := json.Marshal(owner)
+	url := fmt.Sprintf("%s/petclinic/api/owners/%d", hc.BaseURL, owner.ID)
+	input := OwnerInput{
+		FirstName: owner.FirstName,
+		LastName:  owner.LastName,
+		Address:   owner.Address,
+		City:      owner.City,
+		Telephone: owner.Telephone,
+	}
+	body, err := json.Marshal(input)
 	if err != nil {
+		fmt.Printf("Error marshaling request body: %s\n", err.Error())
 		return
 	}
 
-	for {
-		req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
-		if err != nil {
-			continue
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := hc.Client.Do(req)
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode == http.StatusOK {
-			fmt.Printf("Successfully updated owner ID %d\n", owner.ID)
-			break
-		}
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("Error creating request: %s\n", err.Error())
+		return
 	}
+	req.Header.Set("accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := hc.Client.Do(req)
+	if err != nil {
+		fmt.Printf("Request failed: %s\n", err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Failed to read response body: %s\n", err.Error())
+		return
+	}
+
+	if resp.StatusCode < 300 {
+		// fmt.Printf("Successfully updated owner ID %d\n", owner.ID)
+		return
+	}
+
+	fmt.Printf("Update failed for owner ID %d, status: %s, response body: %s\n", owner.ID, resp.Status, string(responseBody))
 }
 
 func main() {
