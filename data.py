@@ -1,5 +1,5 @@
 
-def generate_data_sql(num_owners=1000, pets_per_owner=10):
+def generate_data_sql(num_owners=500, pets_per_owner=10):
     sql_statements = []
     
     # Keep existing data

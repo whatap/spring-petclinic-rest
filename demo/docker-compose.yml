@@ -45,15 +45,38 @@ services:
         whatap.server.host=13.124.188.156
         logsink_enabled=true
         weaving=spring-boot-3.0
+        dbc_sid_enabled=true
+        hook_db_native_enabled=true
+        debug_dbc_sid_enabled=true
     depends_on:
       - petclinic-mysql
     restart: on-failure
-  petclinic-client:
+  petclinic-client-01:
     image: spring-petclinic-rest-client:latest
     environment:
       PETCLINIC_URL: http://petclinic-app:9966
-      NUM_WORKERS: 20
+      NUM_WORKERS: 100
     restart: on-failure
     depends_on:
       - petclinic-mysql
       - petclinic-app
+  petclinic-client-02:
+    image: spring-petclinic-rest-client:latest
+    environment:
+      PETCLINIC_URL: http://petclinic-app:9966
+      NUM_WORKERS: 100
+    restart: on-failure
+    depends_on:
+      - petclinic-mysql
+      - petclinic-app
+      - petclinic-client-01
+  petclinic-client-03:
+    image: spring-petclinic-rest-client:latest
+    environment:
+      PETCLINIC_URL: http://petclinic-app:9966
+      NUM_WORKERS: 100
+    restart: on-failure
+    depends_on:
+      - petclinic-mysql
+      - petclinic-app
+      - petclinic-client-02

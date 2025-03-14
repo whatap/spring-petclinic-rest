@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -98,7 +99,7 @@ func (hc *HTTPClient) GetOwners() []Owner {
 	}
 }
 
-func (hc *HTTPClient) UpdateOwner(owner Owner) {
+func (hc *HTTPClient) EditOwner(owner Owner) {
 	url := fmt.Sprintf("%s/petclinic/api/owners/%d", hc.BaseURL, owner.ID)
 	input := OwnerInput{
 		FirstName: owner.FirstName,
@@ -107,12 +108,16 @@ func (hc *HTTPClient) UpdateOwner(owner Owner) {
 		City:      owner.City,
 		Telephone: owner.Telephone,
 	}
-	body, err := json.Marshal(input)
+
+	hc.updateOwner(http.MethodPut, url, input)
+}
+
+func (hc *HTTPClient) updateOwner(method, url string, owner OwnerInput) {
+	body, err := json.Marshal(owner)
 	if err != nil {
 		fmt.Printf("Error marshaling request body: %s\n", err.Error())
 		return
 	}
-
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Printf("Error creating request: %s\n", err.Error())
@@ -139,7 +144,34 @@ func (hc *HTTPClient) UpdateOwner(owner Owner) {
 		return
 	}
 
-	fmt.Printf("Update failed for owner ID %d, status: %s, response body: %s\n", owner.ID, resp.Status, string(responseBody))
+	fmt.Printf("Update failed: [%s] %s\n", resp.Status, string(responseBody))
+}
+
+const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+var rng = rand.New(rand.NewSource(time.Now().UnixNano())) // 로컬 난수 생성기
+// RandomString generates a random string of given length n
+func RandomString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rng.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+func (hc *HTTPClient) CreateOwner() {
+	url := fmt.Sprintf("%s/petclinic/api/owners", hc.BaseURL)
+	input := OwnerInput{
+		FirstName: RandomString(100),
+		LastName:  RandomString(100),
+		Address:   RandomString(100),
+		City:      RandomString(100),
+		Telephone: RandomString(100),
+	}
+
+	for i := 0; i < 100; i++ {
+		hc.updateOwner(http.MethodPost, url, input)
+	}
 }
 
 func main() {
@@ -162,6 +194,12 @@ func main() {
 		numWorkers = 5 // Default to 5 workers if not set or invalid
 	}
 
+	itemCountStr := os.Getenv("ITEM_COUNT")
+	itemCount, err := strconv.Atoi(itemCountStr)
+	if err != nil || itemCount <= 0 {
+		numWorkers = 1000000 // Default to 5 workers if not set or invalid
+	}
+
 	var wg sync.WaitGroup
 
 	// Start GET requests continuously in workers
@@ -171,8 +209,12 @@ func main() {
 			defer wg.Done()
 			for {
 				owners := client.GetOwners()
+				if len(owners) < itemCount {
+					client.CreateOwner()
+					continue
+				}
 				for _, owner := range owners {
-					client.UpdateOwner(owner)
+					client.EditOwner(owner)
 				}
 			}
 		}()

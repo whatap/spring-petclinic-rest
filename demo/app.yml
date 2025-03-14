@@ -11,3 +11,6 @@ services:
         whatap.server.host=13.124.188.156
         logsink_enabled=true
         weaving=spring-boot-3.0
+        dbc_sid_enabled=truehook_db_native_enabled
+        hook_db_native_enabled=truehook_db_native_enabled
+        debug_dbc_sid_enabled=true
