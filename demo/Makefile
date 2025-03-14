@@ -1,5 +1,5 @@
 down:
-	docker-compose down --volumes --remove-orphans
+	docker compose down --volumes --remove-orphans
 compose:
 	docker compose up
 docker:
