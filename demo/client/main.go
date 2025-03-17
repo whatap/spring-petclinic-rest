@@ -197,7 +197,7 @@ func main() {
 	itemCountStr := os.Getenv("ITEM_COUNT")
 	itemCount, err := strconv.Atoi(itemCountStr)
 	if err != nil || itemCount <= 0 {
-		numWorkers = 1000000 // Default to 5 workers if not set or invalid
+		itemCount = 1000000
 	}
 
 	var wg sync.WaitGroup
