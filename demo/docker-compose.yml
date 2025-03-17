@@ -55,7 +55,7 @@ services:
     image: spring-petclinic-rest-client:latest
     environment:
       PETCLINIC_URL: http://petclinic-app:9966
-      NUM_WORKERS: 100
+      NUM_WORKERS: 1
     restart: on-failure
     depends_on:
       - petclinic-mysql
@@ -64,7 +64,7 @@ services:
     image: spring-petclinic-rest-client:latest
     environment:
       PETCLINIC_URL: http://petclinic-app:9966
-      NUM_WORKERS: 100
+      NUM_WORKERS: 1
     restart: on-failure
     depends_on:
       - petclinic-mysql
@@ -74,7 +74,7 @@ services:
     image: spring-petclinic-rest-client:latest
     environment:
       PETCLINIC_URL: http://petclinic-app:9966
-      NUM_WORKERS: 100
+      NUM_WORKERS: 1
     restart: on-failure
     depends_on:
       - petclinic-mysql
